@@ -65,6 +65,13 @@ async function run() {
             }
         })
 
+        app.get('/api/v1/user/:uid', async (req, res) => {
+            const uid = req.params.uid;
+            const query = { uid }
+            const result = await userCollection.findOne(query);
+            res.send(result);
+        })
+
     } finally {
         // Ensures that the client will close when you finish/error
         // await client.close();
