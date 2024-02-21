@@ -1,7 +1,7 @@
 require('dotenv').config()
 const express = require('express')
 var cors = require('cors')
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express()
 const port = process.env.PORT || 5000
 
@@ -76,6 +76,17 @@ async function run() {
         app.post('/api/v1/donation-request', async (req, res) => {
             const donationInfo = req.body;
             const result = await donationRequestCollection.insertOne(donationInfo);
+            res.send(result);
+        })
+
+        app.patch('/api/v1/update-user-info/:id', async (req, res) => {
+            const id = req.params.id;
+            const updatedInfo = req.body;
+            const query = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: updatedInfo
+            };
+            const result = await userCollection.updateOne(query, updateDoc);
             res.send(result);
         })
 
