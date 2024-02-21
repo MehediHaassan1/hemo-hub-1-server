@@ -37,6 +37,7 @@ async function run() {
         const districtCollection = client.db('hemoHubDB').collection('districts');
         const subdistrictCollection = client.db('hemoHubDB').collection('subdistricts');
         const userCollection = client.db('hemoHubDB').collection('users');
+        const donationRequestCollection = client.db('hemoHubDB').collection('donationRequests');
 
         app.get('/api/v1/divisions', async (req, res) => {
             const result = await divisionCollection.find().toArray();
@@ -69,6 +70,12 @@ async function run() {
             const uid = req.params.uid;
             const query = { uid }
             const result = await userCollection.findOne(query);
+            res.send(result);
+        })
+
+        app.post('/api/v1/donation-request', async (req, res) => {
+            const donationInfo = req.body;
+            const result = await donationRequestCollection.insertOne(donationInfo);
             res.send(result);
         })
 
