@@ -35,7 +35,7 @@ async function run() {
 
         const divisionCollection = client.db('hemoHubDB').collection('divisions');
         const districtCollection = client.db('hemoHubDB').collection('districts');
-        const upazillaCollection = client.db('hemoHubDB').collection('upazillas');
+        const subdistrictCollection = client.db('hemoHubDB').collection('subdistricts');
         const userCollection = client.db('hemoHubDB').collection('users');
 
         app.get('/api/v1/divisions', async (req, res) => {
@@ -48,8 +48,8 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/api/v1/upazillas', async (req, res) => {
-            const result = await upazillaCollection.find().toArray();
+        app.get('/api/v1/subdistricts', async (req, res) => {
+            const result = await subdistrictCollection.find().toArray();
             res.send(result)
         })
 
