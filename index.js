@@ -130,6 +130,19 @@ async function run() {
             res.send(result);
         })
 
+        app.patch('/api/v1/update-request-status/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const updatedStatus = req.body.status;
+            const updateDoc = {
+                $set: {
+                    status: updatedStatus
+                }
+            };
+            const result = await donationRequestCollection.updateOne(query, updateDoc)
+            res.send(result);
+        })
+
     } finally {
         // Ensures that the client will close when you finish/error
         // await client.close();
