@@ -73,9 +73,16 @@ async function run() {
             res.send(result);
         })
 
-        app.post('/api/v1/donation-request', async (req, res) => {
+        app.post('/api/v1/create-donation-request', async (req, res) => {
             const donationInfo = req.body;
             const result = await donationRequestCollection.insertOne(donationInfo);
+            res.send(result);
+        })
+
+        app.get('/api/v1/my-donation-request/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { requesterEmail: email };
+            const result = await donationRequestCollection.find(query).toArray();
             res.send(result);
         })
 
