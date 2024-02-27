@@ -143,6 +143,47 @@ async function run() {
             res.send(result);
         })
 
+        app.get('/api/v1/stats', async (req, res) => {
+            const currentDate = new Date();
+            const previousMonthStartDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 2, 1);
+            const previousMonthEndDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 0);
+
+            const previousPreviousMonthStartDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 3, 1);
+            const previousPreviousMonthEndDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 2, 0);
+
+            const previousMonthUsersData = await userCollection.countDocuments({
+                createdAt: { $gte: previousMonthStartDate, $lte: previousMonthEndDate }
+            });
+
+            const previousMonthRequestsData = await donationRequestCollection.countDocuments({ createdAt: { $gte: previousMonthStartDate, $lte: previousMonthEndDate } })
+
+            const previousPreviousMonthUsersData = await userCollection.countDocuments({
+                createdAt: { $gte: previousPreviousMonthStartDate, $lte: previousPreviousMonthEndDate }
+            });
+            const previousPreviousMonthRequestsData = await donationRequestCollection.countDocuments({ createdAt: { $gte: previousPreviousMonthStartDate, $lte: previousPreviousMonthEndDate } })
+
+
+            const usersPercentage = ((previousMonthUsersData - previousPreviousMonthUsersData) / previousPreviousMonthUsersData) * 100;
+
+
+            const requestPercentage = ((previousMonthRequestsData - previousPreviousMonthRequestsData) / previousPreviousMonthRequestsData) * 100;
+
+            const usersCount = await userCollection.estimatedDocumentCount();
+            const requestsCount = await donationRequestCollection.estimatedDocumentCount();
+
+            const usersStats = {
+                count: usersCount,
+                percentage: usersPercentage
+
+            }
+            const requestsStats = {
+                count: requestsCount,
+                percentage: requestPercentage
+            }
+
+            res.send({ usersStats, requestsStats })
+        })
+
     } finally {
         // Ensures that the client will close when you finish/error
         // await client.close();
