@@ -184,6 +184,11 @@ async function run() {
             res.send({ usersStats, requestsStats })
         })
 
+        app.get('/api/v1/all-users', async (req, res) => {
+            const result = await userCollection.find().toArray();
+            res.send(result);
+        })
+
     } finally {
         // Ensures that the client will close when you finish/error
         // await client.close();
