@@ -63,6 +63,33 @@ async function run() {
         })
         // ********** JWT End********** //
 
+        // ********* * admin route start * **************** //
+        app.get('/api/v1/admin/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            if (email !== req.decoded.email) {
+                return res.status(403).send({ message: 'Forbidden Access' })
+            }
+            const query = { email: email };
+            const user = await userCollection.findOne(query);
+            let admin = false;
+            if (user) {
+                admin = user?.role === 'admin'
+            }
+            res.send({ admin });
+        })
+        // ********* * admin route end * **************** //
+
+
+        // ******** verify admin ********* //
+        const verifyAdmin = async (req, res, next) => {
+            const email = req.decoded.email;
+            const query = { email: email };
+            const user = await userCollection.findOne(query);
+            const isAdmin = user?.role === 'admin';
+            if (!isAdmin) return res.status(403).send({ message: 'Unauthorized Access' })
+            next();
+        }
+
         app.get('/api/v1/divisions', async (req, res) => {
             const result = await divisionCollection.find().toArray();
             res.send(result);
@@ -130,7 +157,7 @@ async function run() {
             res.send(result);
         })
 
-        app.patch('/api/v1/update-request-status/:id', async (req, res) => {
+        app.patch('/api/v1/update-request-status/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const updatedStatus = req.body.status;
@@ -143,7 +170,7 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/api/v1/stats', async (req, res) => {
+        app.get('/api/v1/stats', verifyJWT, verifyAdmin, async (req, res) => {
             const currentDate = new Date();
             const previousMonthStartDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 2, 1);
             const previousMonthEndDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 0);
@@ -184,7 +211,7 @@ async function run() {
             res.send({ usersStats, requestsStats })
         })
 
-        app.get('/api/v1/all-users', async (req, res) => {
+        app.get('/api/v1/all-users', verifyJWT, verifyAdmin, async (req, res) => {
             const result = await userCollection.find().toArray();
             res.send(result);
         })
