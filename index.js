@@ -1,6 +1,8 @@
 require('dotenv').config()
 const express = require('express')
 var cors = require('cors')
+var cron = require('node-cron');
+const moment = require('moment');
 const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express()
@@ -215,6 +217,41 @@ async function run() {
             const result = await userCollection.find().toArray();
             res.send(result);
         })
+
+        app.get('/api/v1/all-requests', verifyJWT, verifyAdmin, async (req, res) => {
+            const result = await donationRequestCollection.find().toArray();
+            res.send(result);
+        })
+
+        const cancelOldStatuses = async () => {
+            // Get the current date and time
+            const currentDateTime = new Date();
+            const originalDateTime = moment(currentDateTime);
+
+            // Format the parsed date and time to the desired format
+            const formattedDateTime = originalDateTime.format('DD-MM-YYYY');
+            console.log(formattedDateTime);
+
+            donationRequestCollection.find({ date: { $lt: formattedDateTime }, status: 'pending' || "inprogress" }).toArray((err, documents) => {
+                if (err) {
+                    return;
+                }
+
+                documents.forEach(document => {
+                    donationRequestCollection.updateOne({ _id: document._id }, { $set: { status: 'Canceled' } }, (err, result) => {
+                        if (err) {
+                            return;
+                        } else {
+                            console.log('Status canceled for document:', document._id);
+                        }
+                    });
+                });
+            });
+        }
+        cron.schedule('0 0 * * *', cancelOldStatuses); // Run every day at midnight
+
+
+
 
     } finally {
         // Ensures that the client will close when you finish/error
