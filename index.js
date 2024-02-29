@@ -172,6 +172,13 @@ async function run() {
             res.send(result);
         })
 
+        app.delete('/api/v1/delete-donation-request/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await donationRequestCollection.deleteOne(query);
+            res.send(result);
+        })
+
         app.get('/api/v1/stats', verifyJWT, verifyAdmin, async (req, res) => {
             const currentDate = new Date();
             const previousMonthStartDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 2, 1);
