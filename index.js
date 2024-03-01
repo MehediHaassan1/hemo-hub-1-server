@@ -66,18 +66,22 @@ async function run() {
         // ********** JWT End********** //
 
         // ********* * admin route start * **************** //
-        app.get('/api/v1/admin/:email', verifyJWT, async (req, res) => {
+        app.get('/api/v1/admin-or-volunteer/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             if (email !== req.decoded.email) {
-                return res.status(403).send({ message: 'Forbidden Access' })
+                return res.status(403).send({ message: 'Unauthorized Access' })
             }
             const query = { email: email };
             const user = await userCollection.findOne(query);
             let admin = false;
+            let volunteer = false;
+            if (user) {
+                volunteer = user?.role === "volunteer";
+            }
             if (user) {
                 admin = user?.role === 'admin'
             }
-            res.send({ admin });
+            res.send({ admin, volunteer })
         })
         // ********* * admin route end * **************** //
 
@@ -91,6 +95,17 @@ async function run() {
             if (!isAdmin) return res.status(403).send({ message: 'Unauthorized Access' })
             next();
         }
+
+        // ******** verify Admin Or Volunteer ********* //
+        const verifyAdminOrVolunteer = async (req, res, next) => {
+            const email = req.decoded.email;
+            const query = { email: email };
+            const user = await userCollection.findOne(query);
+            const isAdminOrVolunteer = user?.role === 'admin' || 'volunteer'
+            if (!isAdminOrVolunteer) return res.status(403).send('Unauthorized Access')
+            next();
+        }
+
 
         app.get('/api/v1/divisions', async (req, res) => {
             const result = await divisionCollection.find().toArray();
@@ -153,8 +168,8 @@ async function run() {
             }
 
             const myRequestsPipeline = [
-                { $match: query }, // Match documents by requesterEmail
-                { $sort: { _id: -1 } }, // Sort documents by _id in descending order
+                { $match: query },
+                { $sort: { _id: -1 } },
             ];
             const result = await donationRequestCollection.aggregate(myRequestsPipeline).toArray();
             res.send(result);
@@ -191,7 +206,7 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/api/v1/stats', verifyJWT, verifyAdmin, async (req, res) => {
+        app.get('/api/v1/stats', verifyJWT, verifyAdminOrVolunteer, async (req, res) => {
             const currentDate = new Date();
             const previousMonthStartDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 2, 1);
             const previousMonthEndDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 0);
@@ -246,7 +261,7 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/api/v1/all-requests', verifyJWT, verifyAdmin, async (req, res) => {
+        app.get('/api/v1/all-requests', verifyJWT, verifyAdminOrVolunteer, async (req, res) => {
 
             const status = req.query.status;
             let requestsPipeline = [];
