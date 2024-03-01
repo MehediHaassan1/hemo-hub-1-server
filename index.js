@@ -221,8 +221,21 @@ async function run() {
         })
 
         app.get('/api/v1/all-users', verifyJWT, verifyAdmin, async (req, res) => {
-            const result = await userCollection.find().toArray();
-            res.send(result);
+            const query = req.query.status;
+            if (query === 'default') {
+                const result = await userCollection.find().toArray();
+                res.send(result);
+            }
+            if (query === 'active') {
+                const filter = { status: 'active' };
+                const result = await userCollection.find(filter).toArray();
+                res.send(result);
+            }
+            if (query === 'blocked') {
+                const filter = { status: 'blocked' };
+                const result = await userCollection.find(filter).toArray();
+                res.send(result);
+            }
         })
 
         app.get('/api/v1/all-requests', verifyJWT, verifyAdmin, async (req, res) => {
