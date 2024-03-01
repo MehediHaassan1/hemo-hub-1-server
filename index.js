@@ -238,22 +238,14 @@ async function run() {
             // Format the parsed date and time to the desired format
             const formattedDateTime = originalDateTime.format('DD-MM-YYYY');
             console.log(formattedDateTime);
-
-            donationRequestCollection.find({ date: { $lt: formattedDateTime }, status: 'pending' || "inprogress" }).toArray((err, documents) => {
-                if (err) {
-                    return;
-                }
-
-                documents.forEach(document => {
-                    donationRequestCollection.updateOne({ _id: document._id }, { $set: { status: 'Canceled' } }, (err, result) => {
-                        if (err) {
-                            return;
-                        } else {
-                            console.log('Status canceled for document:', document._id);
-                        }
-                    });
-                });
-            });
+            console.log('01-03-2025');
+            const query = { donationDate: '29-02-2024', status: { $in: ['Pending', 'Inprogress'] } }
+            // const query = { donationDate: { $lt: formattedDateTime }, status: { $in: ['Pending', 'Inprogress'] } }
+            const documents = await donationRequestCollection.find(query).toArray();
+            console.log(documents);
+            for (const document of documents) {
+                await donationRequestCollection.updateOne({ _id: document._id }, { $set: { status: 'Canceled' } })
+            }
         }
         cron.schedule('0 0 * * *', cancelOldStatuses); // Run every day at midnight
 
