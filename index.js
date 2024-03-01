@@ -221,25 +221,33 @@ async function run() {
         })
 
         app.get('/api/v1/all-users', verifyJWT, verifyAdmin, async (req, res) => {
-            const query = req.query.status;
-            if (query === 'default') {
-                const result = await userCollection.find().toArray();
-                res.send(result);
+            const status = req.query.status;
+            let usersPipeline = [];
+            if (status === 'default') {
+                usersPipeline = [];
+            } else {
+                usersPipeline = [
+                    { $match: { status: status } }
+                ]
             }
-            if (query === 'active') {
-                const filter = { status: 'active' };
-                const result = await userCollection.find(filter).toArray();
-                res.send(result);
-            }
-            if (query === 'blocked') {
-                const filter = { status: 'blocked' };
-                const result = await userCollection.find(filter).toArray();
-                res.send(result);
-            }
+            const result = await userCollection.aggregate(usersPipeline).toArray();
+            res.send(result);
         })
 
         app.get('/api/v1/all-requests', verifyJWT, verifyAdmin, async (req, res) => {
-            const result = await donationRequestCollection.find().toArray();
+
+            const status = req.query.status;
+            let requestsPipeline = [];
+
+            if (status === 'default') {
+                requestsPipeline = [];
+            } else {
+                requestsPipeline = [
+                    { $match: { status: status } }
+                ];
+            }
+
+            const result = await donationRequestCollection.aggregate(requestsPipeline).toArray();
             res.send(result);
         })
 
