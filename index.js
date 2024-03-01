@@ -140,11 +140,23 @@ async function run() {
 
         app.get('/api/v1/my-donation-request/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
+            const status = req.query.status;
+
             if (req.decoded.email !== email) {
                 return res.status(401).send({ message: 'unauthorized access' })
             }
-            const query = { requesterEmail: email };
-            const result = await donationRequestCollection.find(query).sort({ _id: -1 }).toArray();
+            let query;
+            if (status === 'default') {
+                query = { requesterEmail: email };
+            } else {
+                query = { requesterEmail: email, status: status };
+            }
+
+            const myRequestsPipeline = [
+                { $match: query }, // Match documents by requesterEmail
+                { $sort: { _id: -1 } }, // Sort documents by _id in descending order
+            ];
+            const result = await donationRequestCollection.aggregate(myRequestsPipeline).toArray();
             res.send(result);
         })
 
