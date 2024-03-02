@@ -56,6 +56,7 @@ async function run() {
         const subdistrictCollection = client.db('hemoHubDB').collection('subdistricts');
         const userCollection = client.db('hemoHubDB').collection('users');
         const donationRequestCollection = client.db('hemoHubDB').collection('donationRequests');
+        const blogCollection = client.db('hemoHubDB').collection('blogs');
 
         // ********** JWT Start********** //
         app.post('/jwt', async (req, res) => {
@@ -297,8 +298,17 @@ async function run() {
         }
         cron.schedule('0 0 * * *', cancelOldStatuses); // Run every day at midnight
 
+        app.get('/api/v1/blogs', verifyJWT, verifyAdmin, async (req, res) => {
+            const result = await blogCollection.find().toArray();
+            res.send(result);
+        })
 
-
+        app.post('/api/v1/blogs', verifyJWT, verifyAdmin, async (req, res) => {
+            const blogInfo = req.body;
+            console.log(blogInfo);
+            const result = await blogCollection.insertOne(blogInfo);
+            res.send(result);
+        })
 
     } finally {
         // Ensures that the client will close when you finish/error
