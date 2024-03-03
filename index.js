@@ -298,8 +298,28 @@ async function run() {
         }
         cron.schedule('0 0 * * *', cancelOldStatuses); // Run every day at midnight
 
-        app.get('/api/v1/blogs', async (req, res) => {
-            const result = await blogCollection.find().sort({ _id: -1 }).toArray();
+        app.get('/api/v1/blogs/:status', async (req, res) => {
+            const { status } = req.params;
+            let pipeline = [];
+            if (status === 'default') {
+                pipeline = [{ $sort: { _id: -1 } }]
+
+            } else if (status === 'draft') {
+                pipeline = [
+                    { $match: { status: status } },
+                    { $sort: { _id: -1 } }
+                ]
+            } else {
+                pipeline = [
+                    { $match: { status: status } },
+                    { $sort: { _id: -1 } }
+                ]
+            }
+            // const pipeline = [
+            //     { $match: { status: status } },
+            //     { $sort: { _id: -1 } }
+            // ];
+            const result = await blogCollection.aggregate(pipeline).toArray();
             res.send(result);
         })
 
