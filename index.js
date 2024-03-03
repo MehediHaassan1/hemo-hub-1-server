@@ -298,15 +298,25 @@ async function run() {
         }
         cron.schedule('0 0 * * *', cancelOldStatuses); // Run every day at midnight
 
-        app.get('/api/v1/blogs', verifyJWT, verifyAdmin, async (req, res) => {
-            const result = await blogCollection.find().toArray();
+        app.get('/api/v1/blogs', async (req, res) => {
+            const result = await blogCollection.find().sort({ _id: -1 }).toArray();
             res.send(result);
         })
 
         app.post('/api/v1/blogs', verifyJWT, verifyAdmin, async (req, res) => {
             const blogInfo = req.body;
-            console.log(blogInfo);
             const result = await blogCollection.insertOne(blogInfo);
+            res.send(result);
+        })
+
+        app.patch('/api/v1/blogs/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updateData = req.body;
+            const updateDoc = {
+                $set: updateData
+            };
+            const result = await blogCollection.updateOne(filter, updateDoc,);
             res.send(result);
         })
 
