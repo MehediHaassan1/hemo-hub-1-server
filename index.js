@@ -107,20 +107,11 @@ async function run() {
             next();
         }
 
-
-        app.get('/api/v1/divisions', async (req, res) => {
-            const result = await divisionCollection.find().toArray();
-            res.send(result);
-        })
-
-        app.get('/api/v1/districts', async (req, res) => {
-            const result = await districtCollection.find().toArray();
-            res.send(result)
-        })
-
-        app.get('/api/v1/subdistricts', async (req, res) => {
-            const result = await subdistrictCollection.find().toArray();
-            res.send(result)
+        app.get('/api/v1/state-data', async (req, res) => {
+            const division = await divisionCollection.find().toArray();
+            const district = await districtCollection.find().toArray();
+            const subDistrict = await subdistrictCollection.find().toArray();
+            res.send({ division, district, subDistrict })
         })
 
         app.post('/api/v1/users', async (req, res) => {
