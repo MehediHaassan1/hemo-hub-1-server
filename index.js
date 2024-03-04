@@ -315,10 +315,6 @@ async function run() {
                     { $sort: { _id: -1 } }
                 ]
             }
-            // const pipeline = [
-            //     { $match: { status: status } },
-            //     { $sort: { _id: -1 } }
-            // ];
             const result = await blogCollection.aggregate(pipeline).toArray();
             res.send(result);
         })
@@ -337,6 +333,13 @@ async function run() {
                 $set: updateData
             };
             const result = await blogCollection.updateOne(filter, updateDoc,);
+            res.send(result);
+        })
+
+        app.delete('/api/v1/blogs/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const result = await blogCollection.deleteOne(filter);
             res.send(result);
         })
 
