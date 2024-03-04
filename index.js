@@ -298,7 +298,7 @@ async function run() {
         }
         cron.schedule('0 0 * * *', cancelOldStatuses); // Run every day at midnight
 
-        app.get('/api/v1/blogs/:status', async (req, res) => {
+        app.get('/api/v1/blogs/:status', verifyJWT, verifyAdminOrVolunteer, async (req, res) => {
             const { status } = req.params;
             let pipeline = [];
             if (status === 'default') {
@@ -315,6 +315,14 @@ async function run() {
                     { $sort: { _id: -1 } }
                 ]
             }
+            const result = await blogCollection.aggregate(pipeline).toArray();
+            res.send(result);
+        })
+        app.get('/api/v1/blogs', async (req, res) => {
+            const pipeline = [
+                { $match: { status: 'published' } },
+                { $sort: { _id: -1 } }
+            ]
             const result = await blogCollection.aggregate(pipeline).toArray();
             res.send(result);
         })
