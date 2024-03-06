@@ -126,12 +126,12 @@ async function run() {
             }
         })
 
-        app.get('/api/v1/user/:uid', verifyJWT, async (req, res) => {
-            if (!req.decoded.email) {
+        app.get('/api/v1/user/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            if (req.decoded.email !== email) {
                 return res.status(401).send({ message: 'unauthorized access' })
             }
-            const uid = req.params.uid;
-            const query = { uid }
+            const query = { email: email }
             const result = await userCollection.findOne(query);
             res.send(result);
         })
