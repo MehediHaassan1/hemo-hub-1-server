@@ -270,6 +270,24 @@ async function run() {
             res.send(result);
         })
 
+        app.get('/api/v1/search-donors', async (req, res) => {
+            const bloodGroup = req.query.bloodGroup;
+            const district = req.query.district;
+            const subdistrict = req.query.subdistrict;
+            const pipeline = [
+                {
+                    $match: {
+                        district: district,
+                        subdistrict: subdistrict,
+                        bloodGroup: bloodGroup,
+                        role:"donor"
+                    }
+                }
+            ];
+            const result = await userCollection.aggregate(pipeline).toArray();
+            res.send(result);
+        })
+
         const cancelOldStatuses = async () => {
             // Get the current date and time
             const currentDateTime = new Date();
