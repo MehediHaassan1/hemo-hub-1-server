@@ -280,11 +280,29 @@ async function run() {
                         district: district,
                         subdistrict: subdistrict,
                         bloodGroup: bloodGroup,
-                        role:"donor"
+                        role: "donor"
                     }
                 }
             ];
             const result = await userCollection.aggregate(pipeline).toArray();
+            res.send(result);
+        })
+
+        app.get('/api/v1/all-public-requests', async (req, res) => {
+            const status = req.query.status;
+            const pipeline = [
+                {
+                    $match: { status: status }
+                }
+            ]
+            const result = await donationRequestCollection.aggregate(pipeline).toArray();
+            res.send(result);
+        })
+
+        app.get('/api/v1/all-public-requests/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await donationRequestCollection.findOne(query);
             res.send(result);
         })
 
