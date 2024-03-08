@@ -126,6 +126,17 @@ async function run() {
             }
         })
 
+        app.get('/api/v1/reset-password/:email', async (req, res) => {
+            const email = req.params.email
+            const query = { email: email }
+            const result = await userCollection.findOne(query);
+            if (result) {
+                res.send({ user: true });
+            } else {
+                res.send({ user: false });
+            }
+        })
+
         app.get('/api/v1/user/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             if (req.decoded.email !== email) {
