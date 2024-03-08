@@ -181,11 +181,9 @@ async function run() {
         app.patch('/api/v1/update-request-status/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
-            const updatedStatus = req.body.status;
+            const updatedStatus = req.body;
             const updateDoc = {
-                $set: {
-                    status: updatedStatus
-                }
+                $set: updatedStatus
             };
             const result = await donationRequestCollection.updateOne(query, updateDoc)
             res.send(result);
